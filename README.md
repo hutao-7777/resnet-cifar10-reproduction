@@ -2,8 +2,6 @@
 
 PyTorch reproduction of **Deep Residual Learning for Image Recognition** (He et al., CVPR 2016) on the CIFAR-10 dataset.
 
-> 中文：本项目使用 PyTorch 从零实现了 ResNet-20 / ResNet-32 以及用于对比实验的 PlainNet-20，并提供完整的训练、评估与可视化流程，适合论文复现和面试展示。
-
 ---
 
 ## Table of Contents
@@ -21,11 +19,7 @@ PyTorch reproduction of **Deep Residual Learning for Image Recognition** (He et 
 
 ## Introduction
 
-This repository provides a clean, minimal, and fully runnable implementation of ResNet for CIFAR-10 classification. It is designed for:
-
-- Reproducing the original ResNet paper on CIFAR-10.
-- Comparing ResNet with a PlainNet (no residual connections) ablation.
-- Interview demos and educational purposes.
+This repository provides a clean, minimal, and fully runnable implementation of ResNet for CIFAR-10 classification. It is designed for reproducing the original ResNet paper and for comparing ResNet with a PlainNet (no residual connections) ablation.
 
 Key features:
 
@@ -40,7 +34,7 @@ Key features:
 
 ## Results
 
-The following table reports the settings used in this project. You can fill in the actual accuracies after training.
+The following table reports the settings used in this project. Fill in the actual accuracies after training.
 
 | Model        | Params | Epochs | Batch Size | Initial LR | CIFAR-10 Test Accuracy |
 | ------------ | ------ | ------ | ---------- | ---------- | ---------------------- |
@@ -48,10 +42,7 @@ The following table reports the settings used in this project. You can fill in t
 | ResNet-32    | 0.46 M | 200    | 128        | 0.1        | **--.--%**             |
 | PlainNet-20  | 0.27 M | 200    | 128        | 0.1        | **--.--%**             |
 
-> 中文说明：
-> - ResNet-20 / ResNet-32 参数量分别约为 0.27 M 和 0.46 M。
-> - PlainNet-20 与 ResNet-20 结构相同，但去掉了残差连接，通常准确率明显更低，可用于展示残差连接的重要性。
-> - 论文中 ResNet-20 在 CIFAR-10 上的准确率约为 91.25%，ResNet-32 约为 92.49%（具体数值可能因随机种子和实现细节略有差异）。
+ResNet-20 and ResNet-32 have approximately 0.27 M and 0.46 M parameters, respectively. PlainNet-20 shares the same depth and width as ResNet-20 but removes the shortcut connections; it typically achieves a lower accuracy, which demonstrates the importance of residual learning.
 
 ---
 
@@ -65,8 +56,6 @@ cd resnet-cifar10-reproduction
 ```
 
 ### 2. Install dependencies
-
-We recommend using a virtual environment (e.g., `venv` or `conda`):
 
 ```bash
 python -m venv .venv
@@ -87,7 +76,7 @@ python train.py --model resnet32 --epochs 200 --batch_size 128 --lr 0.1
 python train.py --model plainnet20 --epochs 200 --batch_size 128 --lr 0.1
 ```
 
-> 中文：训练过程中会自动下载 CIFAR-10 数据集到 `./data`，TensorBoard 日志写入 `./runs`，最佳模型保存到 `./checkpoints/best.pth`。
+During training, CIFAR-10 will be automatically downloaded to `./data`, TensorBoard logs will be written to `./runs`, and the best checkpoint will be saved to `./checkpoints/best.pth`.
 
 ### 4. Evaluate a checkpoint
 
@@ -98,7 +87,6 @@ python eval.py --checkpoint checkpoints/best.pth --model resnet20
 ### 5. Visualize
 
 ```bash
-# After training two models, compare their histories
 python visualize.py \
     --checkpoint checkpoints/best.pth \
     --model resnet20 \
@@ -106,7 +94,11 @@ python visualize.py \
     --plain_history runs/plainnet20/history.npz
 ```
 
-> 中文：`visualize.py` 默认会生成 `results/training_curve.png`、`results/resnet_vs_plainnet.png`、`results/feature_maps.png` 和 `results/confusion_matrix.png`。
+`visualize.py` generates the following figures under `results/`:
+- `training_curve.png`
+- `resnet_vs_plainnet.png`
+- `feature_maps.png`
+- `confusion_matrix.png`
 
 ### 6. TensorBoard
 
@@ -147,10 +139,10 @@ resnet-cifar10-reproduction/
 
 ## Key Implementations
 
-- **Residual Connection（残差连接）**: Implemented in `BasicBlock` as `out += identity` before the final ReLU.
-- **Identity Mapping & Downsampling**: A `1x1` convolutional shortcut is used when stride ≠ 1 or input/output channels mismatch.
-- **Batch Normalization（批归一化）**: Applied before every ReLU activation.
-- **Kaiming Initialization（Kaiming 初始化）**: Conv layers are initialized with `kaiming_normal_`.
+- **Residual Connection**: Implemented in `BasicBlock` as `out += identity` before the final ReLU.
+- **Identity Mapping & Downsampling**: A `1x1` convolutional shortcut is used when stride != 1 or input/output channels mismatch.
+- **Batch Normalization**: Applied before every ReLU activation.
+- **Kaiming Initialization**: Conv layers are initialized with `kaiming_normal_`.
 - **CIFAR-Specific Input Stem**: Uses a single `3x3` convolution (no `7x7` and no max-pooling) to preserve 32x32 resolution.
 - **Optimizer & Scheduler**: SGD with momentum 0.9, weight decay 1e-4, and `CosineAnnealingLR`.
 - **PlainNet Ablation**: Same depth and width as ResNet-20 but without shortcuts, demonstrating the benefit of residuals.
@@ -171,8 +163,6 @@ resnet-cifar10-reproduction/
 | Epochs         | 200                                         |
 | Data Augmentation | RandomCrop(32, padding=4) + RandomHorizontalFlip |
 | Normalization  | mean=(0.4914, 0.4822, 0.4465), std=(0.2470, 0.2435, 0.2616) |
-
-> 中文：这些超参数与论文中的标准 CIFAR-10 设置基本一致。
 
 ---
 

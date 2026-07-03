@@ -1,6 +1,10 @@
 # ResNet-CIFAR10-Reproduction
 
+<<<<<<< HEAD
 PyTorch reproduction of **Deep Residual Learning for Image Recognition** (He et al., CVPR 2016) on the CIFAR-10 and CIFAR-100 datasets.
+=======
+PyTorch reproduction of **Deep Residual Learning for Image Recognition** (He et al., CVPR 2016) on the CIFAR-10 dataset.
+>>>>>>> f8dc2693069af0bb681a2af4e6b48e83f9fb1db7
 
 ---
 
@@ -20,7 +24,11 @@ PyTorch reproduction of **Deep Residual Learning for Image Recognition** (He et 
 
 ## Introduction
 
+<<<<<<< HEAD
 This repository provides a clean, minimal, and fully runnable implementation of ResNet for CIFAR-10/100 classification. It is designed for reproducing the original ResNet paper and for comparing ResNet with a PlainNet (no residual connections) ablation.
+=======
+This repository provides a clean, minimal, and fully runnable implementation of ResNet for CIFAR-10 classification. It is designed for reproducing the original ResNet paper and for comparing ResNet with a PlainNet (no residual connections) ablation.
+>>>>>>> f8dc2693069af0bb681a2af4e6b48e83f9fb1db7
 
 Key features:
 
@@ -38,7 +46,11 @@ Key features:
 
 ## Results
 
+<<<<<<< HEAD
 The following table reports the settings used in this project. Run the training commands below and fill in the accuracies in place of the `--.--%` placeholders.
+=======
+The following table reports the settings used in this project. Fill in the actual accuracies after training.
+>>>>>>> f8dc2693069af0bb681a2af4e6b48e83f9fb1db7
 
 | Model        | Params | Epochs | Batch Size | Initial LR | CIFAR-10 Test Accuracy |
 | ------------ | ------ | ------ | ---------- | ---------- | ---------------------- |
@@ -49,6 +61,7 @@ The following table reports the settings used in this project. Run the training 
 | ResNet-110   | 1.73 M | 200    | 128        | 0.1        | **--.--%**             |
 | PlainNet-20  | 0.27 M | 200    | 128        | 0.1        | **--.--%**             |
 
+<<<<<<< HEAD
 > **Note:** `--.--%` is a placeholder. Train the corresponding model and replace it with the achieved test accuracy.
 
 ---
@@ -62,6 +75,9 @@ No official pretrained checkpoints are provided in this repository yet. You can 
 | ResNet-20   | CIFAR-10 | TBD      | --.--%        |
 | ResNet-32   | CIFAR-10 | TBD      | --.--%        |
 | PlainNet-20 | CIFAR-10 | TBD      | --.--%        |
+=======
+ResNet-20 and ResNet-32 have approximately 0.27 M and 0.46 M parameters, respectively. PlainNet-20 shares the same depth and width as ResNet-20 but removes the shortcut connections; it typically achieves a lower accuracy, which demonstrates the importance of residual learning.
+>>>>>>> f8dc2693069af0bb681a2af4e6b48e83f9fb1db7
 
 ---
 
@@ -122,6 +138,7 @@ python train.py --model plainnet20 --epochs 200 --batch_size 128 --lr 0.1
 python train.py --model resnet20 --dataset cifar100 --epochs 200 --batch_size 128 --lr 0.1
 ```
 
+<<<<<<< HEAD
 #### YAML configuration
 
 ```bash
@@ -132,6 +149,9 @@ python train.py --config configs/resnet20.yaml --epochs 10 --use_cutout
 ```
 
 During training, the dataset will be automatically downloaded to `./data`, TensorBoard logs will be written to `./runs/{model}`, the best checkpoint will be saved to `./checkpoints/best.pth`, and the per-epoch training history will be saved to `./runs/{model}/history.npz` for visualization.
+=======
+During training, CIFAR-10 will be automatically downloaded to `./data`, TensorBoard logs will be written to `./runs`, and the best checkpoint will be saved to `./checkpoints/best.pth`.
+>>>>>>> f8dc2693069af0bb681a2af4e6b48e83f9fb1db7
 
 ### 4. Evaluate a checkpoint
 
@@ -142,7 +162,10 @@ python eval.py --checkpoint checkpoints/best.pth --model resnet20 --dataset cifa
 ### 5. Visualize
 
 ```bash
+<<<<<<< HEAD
 # After training both models, compare them and visualize the ResNet checkpoint
+=======
+>>>>>>> f8dc2693069af0bb681a2af4e6b48e83f9fb1db7
 python visualize.py \
     --checkpoint checkpoints/best.pth \
     --model resnet20 \
@@ -152,6 +175,7 @@ python visualize.py \
 ```
 
 `visualize.py` generates the following figures under `results/`:
+<<<<<<< HEAD
 
 - `training_curve.png` — Train loss and test accuracy vs. epoch.
 - `lr_schedule.png` — Learning rate vs. epoch.
@@ -159,6 +183,12 @@ python visualize.py \
 - `feature_maps.png` — First 6 feature maps from the first convolutional layer.
 - `confusion_matrix.png` — Heatmap of the confusion matrix on the test set.
 - `misclassified_samples.png` — 4x4 grid of misclassified samples with True/Pred labels.
+=======
+- `training_curve.png`
+- `resnet_vs_plainnet.png`
+- `feature_maps.png`
+- `confusion_matrix.png`
+>>>>>>> f8dc2693069af0bb681a2af4e6b48e83f9fb1db7
 
 ### 6. TensorBoard
 
@@ -222,6 +252,7 @@ resnet-cifar10-reproduction/
 
 ## Training Details
 
+<<<<<<< HEAD
 | Hyperparameter    | Value                                                         |
 | ----------------- | ------------------------------------------------------------- |
 | Optimizer         | SGD                                                           |
@@ -236,6 +267,20 @@ resnet-cifar10-reproduction/
 | Data Augmentation | RandomCrop(32, padding=4) + RandomHorizontalFlip (+ Cutout)   |
 | CIFAR-10 Norm     | mean=(0.4914, 0.4822, 0.4465), std=(0.2470, 0.2435, 0.2616)   |
 | CIFAR-100 Norm    | mean=(0.5071, 0.4867, 0.4408), std=(0.2675, 0.2565, 0.2761)   |
+=======
+| Hyperparameter | Value                                       |
+| -------------- | ------------------------------------------- |
+| Optimizer      | SGD                                         |
+| Momentum       | 0.9                                         |
+| Weight Decay   | 1e-4                                        |
+| Initial LR     | 0.1                                         |
+| LR Schedule    | Cosine Annealing (`T_max = num_epochs`)     |
+| Loss Function  | CrossEntropyLoss                            |
+| Batch Size     | 128                                         |
+| Epochs         | 200                                         |
+| Data Augmentation | RandomCrop(32, padding=4) + RandomHorizontalFlip |
+| Normalization  | mean=(0.4914, 0.4822, 0.4465), std=(0.2470, 0.2435, 0.2616) |
+>>>>>>> f8dc2693069af0bb681a2af4e6b48e83f9fb1db7
 
 ---
 

@@ -1,0 +1,17 @@
+# Default configuration for training PlainNet-20 on CIFAR-10.
+
+model: plainnet20
+dataset: cifar10
+epochs: 200
+batch_size: 128
+lr: 0.1
+lr_scheduler: cosine
+milestones: [82, 123]
+gamma: 0.1
+use_cutout: false
+cutout_length: 16
+label_smoothing: 0.0
+num_workers: 4
+data_dir: ./data
+checkpoint_dir: checkpoints
+run_dir: runs

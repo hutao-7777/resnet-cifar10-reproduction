@@ -1,14 +1,17 @@
-"""
-Training loop for CIFAR-10 classification.
+"""Training loop for CIFAR-10/100 classification.
 
 The ``Trainer`` class encapsulates a standard SGD optimizer with momentum and
-weight decay, cosine annealing learning-rate schedule, and TensorBoard logging.
-The best checkpoint (by test accuracy) is saved to ``checkpoints/best.pth``.
+weight decay, a configurable learning-rate schedule (cosine or multistep),
+optional label smoothing, TensorBoard logging, and automatic checkpointing.
+The best checkpoint (by test accuracy) is saved to ``{checkpoint_dir}/best.pth``
+and training history is saved to ``{run_dir}/{model_name}/history.npz`` for
+later visualization.
 """
 
 import os
 from typing import List, Optional
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -18,17 +21,29 @@ from tqdm import tqdm
 
 
 class Trainer:
-    """Trainer for ResNet/PlainNet on CIFAR-10.
+    """Trainer for ResNet/PlainNet on CIFAR-10/100.
 
     Args:
         model: PyTorch model to train.
         train_loader: Training dataloader.
         test_loader: Test dataloader.
         device: Device used for training.
-        writer: TensorBoard ``SummaryWriter`` instance.
+        writer: TensorBoard ``SummaryWriter`` instance (optional).
         lr: Initial learning rate (default: 0.1).
         num_epochs: Total number of epochs for cosine annealing (default: 200).
-        checkpoint_dir: Directory where checkpoints are saved (default: "checkpoints").
+        checkpoint_dir: Directory where checkpoints are saved
+            (default: "checkpoints").
+        run_dir: Directory where TensorBoard logs and training histories are
+            saved (default: "runs").
+        model_name: Identifier for the model, used as a subdirectory name under
+            ``run_dir`` (default: None).
+        lr_scheduler: Learning-rate schedule, either "cosine" or "multistep"
+            (default: "cosine").
+        milestones: Epoch indices at which the learning rate is decayed by
+            ``gamma`` when ``lr_scheduler="multistep"" (default: [82, 123]).
+        gamma: Multiplicative factor for MultiStepLR (default: 0.1).
+        label_smoothing: Label smoothing factor for CrossEntropyLoss
+            (default: 0.0).
     """
 
     def __init__(
@@ -41,6 +56,12 @@ class Trainer:
         lr: float = 0.1,
         num_epochs: int = 200,
         checkpoint_dir: str = "checkpoints",
+        run_dir: str = "runs",
+        model_name: Optional[str] = None,
+        lr_scheduler: str = "cosine",
+        milestones: Optional[List[int]] = None,
+        gamma: float = 0.1,
+        label_smoothing: float = 0.0,
     ) -> None:
         self.model = model.to(device)
         self.train_loader = train_loader
@@ -50,22 +71,53 @@ class Trainer:
         self.num_epochs = num_epochs
         self.checkpoint_dir = checkpoint_dir
 
-        self.criterion = nn.CrossEntropyLoss()
+        # Directory used to store the per-epoch training history (.npz).
+        self.history_dir = os.path.join(run_dir, model_name) if model_name else run_dir
+        os.makedirs(self.history_dir, exist_ok=True)
+
+        self.criterion = nn.CrossEntropyLoss(
+            label_smoothing=label_smoothing,
+        )
         self.optimizer = optim.SGD(
             self.model.parameters(),
             lr=lr,
             momentum=0.9,
             weight_decay=1e-4,
         )
-        self.scheduler = optim.lr_scheduler.CosineAnnealingLR(
-            self.optimizer, T_max=num_epochs
+        self.scheduler = self._build_scheduler(
+            lr_scheduler=lr_scheduler,
+            milestones=milestones,
+            gamma=gamma,
         )
 
         os.makedirs(self.checkpoint_dir, exist_ok=True)
 
         self.train_losses: List[float] = []
         self.test_accuracies: List[float] = []
+        self.learning_rates: List[float] = []
         self.best_acc: float = 0.0
+
+    def _build_scheduler(
+        self,
+        lr_scheduler: str,
+        milestones: Optional[List[int]],
+        gamma: float,
+    ) -> optim.lr_scheduler._LRScheduler:
+        """Build the learning-rate scheduler based on the selected strategy."""
+        if lr_scheduler == "cosine":
+            return optim.lr_scheduler.CosineAnnealingLR(
+                self.optimizer, T_max=self.num_epochs
+            )
+        if lr_scheduler == "multistep":
+            return optim.lr_scheduler.MultiStepLR(
+                self.optimizer,
+                milestones=milestones if milestones is not None else [82, 123],
+                gamma=gamma,
+            )
+        raise ValueError(
+            f"Unsupported lr_scheduler: {lr_scheduler}. "
+            "Choose 'cosine' or 'multistep'."
+        )
 
     def train_epoch(self) -> float:
         """Train for one epoch and return the average loss."""
@@ -107,17 +159,34 @@ class Trainer:
         accuracy = 100.0 * correct / total
         return accuracy
 
+    def _save_history(self) -> None:
+        """Persist training losses, accuracies and learning rates to a .npz file."""
+        history_path = os.path.join(self.history_dir, "history.npz")
+        np.savez(
+            history_path,
+            train_losses=np.array(self.train_losses, dtype=np.float32),
+            test_accuracies=np.array(self.test_accuracies, dtype=np.float32),
+            learning_rates=np.array(self.learning_rates, dtype=np.float32),
+        )
+
     def train(self, num_epochs: int) -> None:
-        """Main training loop."""
+        """Run the main training loop.
+
+        Args:
+            num_epochs: Number of epochs to train.
+        """
         for epoch in range(1, num_epochs + 1):
             train_loss = self.train_epoch()
             test_acc = self.eval_epoch()
             self.scheduler.step()
 
+            current_lr = self.optimizer.param_groups[0]["lr"]
+
             self.train_losses.append(train_loss)
             self.test_accuracies.append(test_acc)
+            self.learning_rates.append(current_lr)
+            self._save_history()
 
-            current_lr = self.optimizer.param_groups[0]["lr"]
             print(
                 f"Epoch [{epoch:03d}/{num_epochs:03d}] "
                 f"Loss: {train_loss:.4f} | Test Acc: {test_acc:.2f}% | LR: {current_lr:.6f}"

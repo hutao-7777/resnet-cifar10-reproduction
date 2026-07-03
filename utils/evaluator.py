@@ -1,8 +1,6 @@
-"""
-Evaluation utilities: top-1 accuracy, per-class accuracy and confusion matrix.
-"""
+"""Evaluation utilities: top-1 accuracy, per-class accuracy and confusion matrix."""
 
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 import numpy as np
 import torch
@@ -16,6 +14,7 @@ def evaluate(
     model: nn.Module,
     test_loader: DataLoader,
     device: torch.device,
+    num_classes: Optional[int] = None,
 ) -> Tuple[float, np.ndarray]:
     """Evaluate a model on the test set.
 
@@ -23,6 +22,8 @@ def evaluate(
         model: Trained PyTorch model.
         test_loader: Test dataloader.
         device: Device used for inference.
+        num_classes: Number of classes. If None, inferred from
+            ``test_loader.dataset.classes`` or from the maximum label.
 
     Returns:
         A tuple containing:
@@ -30,7 +31,17 @@ def evaluate(
             - Per-class accuracy array of shape ``(num_classes,)``.
     """
     model.eval()
-    num_classes = len(test_loader.dataset.classes)
+
+    if num_classes is None:
+        if hasattr(test_loader.dataset, "classes"):
+            num_classes = len(test_loader.dataset.classes)
+        else:
+            # Infer the number of classes from the labels in the loader.
+            all_labels: List[int] = []
+            for _, targets in test_loader:
+                all_labels.extend(targets.numpy().tolist())
+            num_classes = max(all_labels) + 1
+
     class_correct = np.zeros(num_classes, dtype=np.int64)
     class_total = np.zeros(num_classes, dtype=np.int64)
     total_correct = 0

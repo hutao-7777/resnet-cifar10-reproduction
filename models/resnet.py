@@ -14,7 +14,6 @@ import torch.nn as nn
 
 from .basic_block import BasicBlock, PlainBlock
 
-
 BlockType = Union[Type[BasicBlock], Type[PlainBlock]]
 
 
@@ -89,6 +88,7 @@ class ResNet(nn.Module):
         return nn.Sequential(*layers)
 
     def _initialize_weights(self) -> None:
+        """Apply Kaiming/constant initialization to conv, bn and fc layers."""
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
                 nn.init.kaiming_normal_(m.weight, mode="fan_out", nonlinearity="relu")
@@ -128,6 +128,16 @@ def resnet32(num_classes: int = 10) -> ResNet:
 def resnet44(num_classes: int = 10) -> ResNet:
     """ResNet-44 for CIFAR-10 (layers=[7,7,7])."""
     return ResNet(BasicBlock, [7, 7, 7], num_classes=num_classes)
+
+
+def resnet56(num_classes: int = 10) -> ResNet:
+    """ResNet-56 for CIFAR-10 (layers=[9,9,9])."""
+    return ResNet(BasicBlock, [9, 9, 9], num_classes=num_classes)
+
+
+def resnet110(num_classes: int = 10) -> ResNet:
+    """ResNet-110 for CIFAR-10 (layers=[18,18,18])."""
+    return ResNet(BasicBlock, [18, 18, 18], num_classes=num_classes)
 
 
 def plainnet20(num_classes: int = 10) -> ResNet:

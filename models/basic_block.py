@@ -83,6 +83,8 @@ class PlainBlock(nn.Module):
         in_planes: Number of input channels.
         planes: Number of output channels.
         stride: Stride for the first convolution (default: 1).
+        downsample: Ignored in ``PlainBlock``; kept only for API compatibility
+            with ``BasicBlock`` and ``ResNet._make_layer``.
     """
 
     expansion: int = 1
@@ -95,6 +97,8 @@ class PlainBlock(nn.Module):
         downsample: Optional[nn.Module] = None,
     ) -> None:
         super().__init__()
+        # ``downsample`` is accepted but intentionally unused; a plain block has
+        # no shortcut connection.
 
         self.conv1 = nn.Conv2d(
             in_planes, planes, kernel_size=3, stride=stride, padding=1, bias=False

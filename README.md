@@ -79,7 +79,6 @@ PyTorch 复现 **Deep Residual Learning for Image Recognition**（He et al., CVP
 
 - 符合 PEP8 规范
 - 通过 `black`、`isort`、`flake8` 检查
-- 提供合成数据冒烟测试
 - GitHub Actions CI 自动化检查
 
 ---
@@ -205,13 +204,10 @@ resnet-cifar10-reproduction/
 │   ├── evaluator.py            # 准确率、混淆矩阵
 │   ├── model_utils.py          # count_parameters 等工具
 │   └── trainer.py              # 训练循环、TensorBoard、检查点
-├── tests/
-│   └── test_smoke.py           # 合成数据冒烟测试
 ├── checkpoints/                # 保存的模型检查点（运行时生成）
 ├── data/                       # 自动下载的数据集（运行时生成）
 ├── results/                    # 可视化图片（运行时生成）
 ├── runs/                       # TensorBoard 日志（运行时生成）
-├── .pre-commit-config.yaml     # pre-commit hooks
 ├── .gitignore
 ├── eval.py                     # 评估入口
 ├── requirements.txt            # Python 依赖

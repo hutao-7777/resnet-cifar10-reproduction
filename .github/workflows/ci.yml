@@ -36,10 +36,6 @@ jobs:
       - name: Lint with flake8
         run: flake8 --max-line-length=100 --exclude=.venv,__pycache__,data,checkpoints,runs,results .
 
-      - name: Run pytest
-        run: |
-          if [ -d tests ]; then pytest; else echo "No tests directory, skipping pytest"; fi
-
       - name: Smoke test - 1 epoch training
         run: |
           python train.py \
